@@ -9,6 +9,7 @@
 from flask import Flask, request, redirect, url_for, render_template, send_from_directory
 import webbrowser
 from werkzeug.utils import secure_filename
+from werkzeug.Aborter import 
 import os
 
 #Debug-kategorioita voi kääntää päälle ja pois
@@ -31,6 +32,8 @@ def debug(msg, cat):
 
 piirt = Flask(__name__)
 
+online = True
+
 debug("Palvelimen sisältö: "+str(dir(piirt)),"palvelinSisalto")
 
 #HUOM! Muista kääntää flaskin debug pois päältä,
@@ -38,8 +41,8 @@ debug("Palvelimen sisältö: "+str(dir(piirt)),"palvelinSisalto")
 
 julkisessaVerkossa = False
 
-if julkisessaVerkossa == False:
-    piirt.debug = True
+#if julkisessaVerkossa == False:
+#    piirt.debug = True
 
 #Varastoidaan tämän skriptitiedoston polku
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -73,41 +76,42 @@ def allowed_file(filename):
 
 @piirt.route("/", methods=['GET', 'POST'])
 def upload_file():
-    debug("Server reacted","tiedostonLahetys")
-    if request.method == 'POST':
-        debug("Post received, request.files == "+str(request.files),"tiedostonLahetys")
-        # check if the post request has the file part
-        if 'file' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
-        file = request.files['file']
-        # if user does not select file, browser also
-        # submit a empty part without filename
-        if file.filename == '':
-            flash('No selected file')
-            return redirect(request.url)
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            debug("filename: "+str(filename),"nimenTarkistus")
-            #dump(file)
-            file.save(os.path.join(piirt.config['UPLOAD_FOLDER'], filename))
-            
-            return redirect(url_for('uploaded_file',filename=filename))
-    return '''
-<!doctype html>
-<title>Upload new File</title>
-<h1>Upload new File</h1>
-<form method=post enctype=multipart/form-data>
-<p><input type=file name=file>
-<input type=submit value=Upload>
-</form>
-'''
+    if online == True:
+        debug("Server reacted","tiedostonLahetys")
+        if request.method == 'POST':
+            debug("Post received, request.files == "+str(request.files),"tiedostonLahetys")
+            # check if the post request has the file part
+            if 'file' not in request.files:
+                flash('No file part')
+                return redirect(request.url)
+            file = request.files['file']
+            # if user does not select file, browser also
+            # submit a empty part without filename
+            if file.filename == '':
+                flash('No selected file')
+                return redirect(request.url)
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                debug("filename: "+str(filename),"nimenTarkistus")
+                #dump(file)
+                file.save(os.path.join(piirt.config['UPLOAD_FOLDER'], filename))
+                
+                return redirect(url_for('uploaded_file',filename=filename))
+        return '''
+    <!doctype html>
+    <title>Upload new File</title>
+    <h1>Upload new File</h1>
+    <form method=post enctype=multipart/form-data>
+    <p><input type=file name=file>
+    <input type=submit value=Upload>
+    </form>
+    '''
 
 @piirt.route('/static/upload/<filename>')
 def uploaded_file(filename):
     return send_from_directory(piirt.config['UPLOAD_FOLDER'],filename)
 
-
+#Huom. tee sammutusfunktio koko hässäkälle
 
 piirt.run()
 
