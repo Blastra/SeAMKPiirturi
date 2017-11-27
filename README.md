@@ -1,0 +1,2 @@
+# SeAMKPiirturi
+Verkkokäyttöliittymä käyttötekniikan laboratorion piirturille
