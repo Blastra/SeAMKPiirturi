@@ -6,10 +6,9 @@
 
 #Kun ohjelma on valmis julkiseen verkkoon: flask run --host=0.0.0.0
 
-from flask import Flask, request, redirect, url_for, render_template, send_from_directory
+from flask import Flask, request, redirect, url_for, render_template, send_from_directory, make_response
 import webbrowser
 from werkzeug.utils import secure_filename
-from werkzeug.Aborter import 
 import os
 
 #Debug-kategorioita voi kääntää päälle ja pois
@@ -41,8 +40,8 @@ debug("Palvelimen sisältö: "+str(dir(piirt)),"palvelinSisalto")
 
 julkisessaVerkossa = False
 
-#if julkisessaVerkossa == False:
-#    piirt.debug = True
+if julkisessaVerkossa == False:
+    piirt.debug = True
 
 #Varastoidaan tämän skriptitiedoston polku
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -50,14 +49,14 @@ APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 #Määritellään kansio, jonne verkon kautta
 #palvelimelle kopioidut tiedostot tallennetaan
 
-tallennusKansio = os.path.join(APP_ROOT, "static/upload")
+tallennusKansio = os.path.join(APP_ROOT, "static")
 
 piirt.config["UPLOAD_FOLDER"] = tallennusKansio
 
 
 #Rajataan tallennus vain tietyille tiedostotyypeille
 
-sallitutTiedostoTyypit = set(["svg","jpg"])
+sallitutTiedostoTyypit = set(["svg"])
 
 
 def allowed_file(filename):
@@ -67,7 +66,7 @@ def allowed_file(filename):
 @piirt.route("/profile/<name>")
 def profile(name):
     
-    return render_template("Piirturi.html", name=name)
+    return render_template("TestiTervehdysKuva.html", name=name)
 
 def allowed_file(filename):
     debug("sallitutTiedostoTyypit: "+str(sallitutTiedostoTyypit),"nimenTarkistus")
@@ -94,13 +93,14 @@ def upload_file():
                 filename = secure_filename(file.filename)
                 debug("filename: "+str(filename),"nimenTarkistus")
                 #dump(file)
-                file.save(os.path.join(piirt.config['UPLOAD_FOLDER'], filename))
+                savPath = os.path.join(piirt.config['UPLOAD_FOLDER'], filename)
+                file.save(savPath)
                 
                 return redirect(url_for('uploaded_file',filename=filename))
         return '''
     <!doctype html>
-    <title>Upload new File</title>
-    <h1>Upload new File</h1>
+    <title>Piirturin etäohjaus</title>
+    <h1>Anna piirturille svg-tiedosto</h1>
     <form method=post enctype=multipart/form-data>
     <p><input type=file name=file>
     <input type=submit value=Upload>
@@ -109,9 +109,7 @@ def upload_file():
 
 @piirt.route('/static/upload/<filename>')
 def uploaded_file(filename):
-    return send_from_directory(piirt.config['UPLOAD_FOLDER'],filename)
-
-#Huom. tee sammutusfunktio koko hässäkälle
+    return render_template("UploadedImg.html", filename="/static/"+filename)
 
 piirt.run()
 
