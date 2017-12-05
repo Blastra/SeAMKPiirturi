@@ -28,7 +28,7 @@ def debug(msg, cat):
         print("DEBUG: "+str(msg))
 
 
-
+#Määritellään Flask-applikaatio-objekti
 piirt = Flask(__name__)
 
 online = True
@@ -79,21 +79,23 @@ def upload_file():
         debug("Server reacted","tiedostonLahetys")
         if request.method == 'POST':
             debug("Post received, request.files == "+str(request.files),"tiedostonLahetys")
-            # check if the post request has the file part
+            # Tarkistetaan, onko POST-pyynnössä mukana tiedosto
             if 'file' not in request.files:
                 flash('No file part')
                 return redirect(request.url)
             file = request.files['file']
-            # if user does not select file, browser also
-            # submit a empty part without filename
+            # Käsitellään tapaus, jossa käyttäjä ei
+            # anna tiedostoa
             if file.filename == '':
                 flash('No selected file')
                 return redirect(request.url)
-            if file and allowed_file(file.filename):
+            #Tarkistetaan, onko tiedosto sallittua tyyppiä
+            if file and allowed_file(file.filename):                
                 filename = secure_filename(file.filename)
                 debug("filename: "+str(filename),"nimenTarkistus")
                 #dump(file)
                 savPath = os.path.join(piirt.config['UPLOAD_FOLDER'], filename)
+                #Tallennetaan tiedosto paikallisesti määriteltyyn polkuun
                 file.save(savPath)
                 
                 return redirect(url_for('uploaded_file',filename=filename))
@@ -114,50 +116,4 @@ def uploaded_file(filename):
 piirt.run()
 
 
-"""
-@piirt.route("/")
-def index():
-    pass
 
-
-@piirt.route("/login")
-def login():
-    pass
-
-
-
-@piirt.route("/user/<username>")
-def profile(username):
-    pass
-
-#with piirt.test_request_context():
-#    print(url_for('index'))
-#    print(url_for('login'))
-#    print(url_for('login', next='/'))
-#    print(url_for('profile', username='John Doe'))
-
-piirt.run()
-
-
-kertyma = "Moro"
-
-piirt = Flask(__name__)
-
-@piirt.route("/")
-def ohai(kertyma):
-    kertyma += "ror"
-    return kertyma
-
-    with piirt.test_request_context("/hello", method="POST"):
-
-
-        assert request.path == "/hello"
-        assert request.method == "POST"
-                                
-    
-
-
-#name = "Kalmari"
-
-piirt.run()
-"""
