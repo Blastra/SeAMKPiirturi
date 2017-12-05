@@ -99,21 +99,16 @@ def upload_file():
                 file.save(savPath)
                 
                 return redirect(url_for('uploaded_file',filename=filename))
-        return '''
-    <!doctype html>
-    <title>Piirturin etäohjaus</title>
-    <h1>Anna piirturille svg-tiedosto</h1>
-    <form method=post enctype=multipart/form-data>
-    <p><input type=file name=file>
-    <input type=submit value=Upload>
-    </form>
-    '''
+        return render_template("FileSubmitPage.html")
 
 @piirt.route('/static/upload/<filename>')
 def uploaded_file(filename):
     return render_template("UploadedImg.html", filename="/static/"+filename)
 
+
+
 piirt.run()
+
 
 
 
