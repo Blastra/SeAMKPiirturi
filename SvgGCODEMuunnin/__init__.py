@@ -7,18 +7,19 @@
 import sys
 import os
 
-moduuliPolku = os.getcwd()
+moduuliPolku = os.path.split(__file__)[0]
 
 if moduuliPolku not in sys.path:
     sys.path.append(moduuliPolku)
     print("Moduulipolku "+str(moduuliPolku)+" lisätty")
 
 from svg2gcode import generate_gcode, test
-#import svg2gcode
 
-#kohdeSVG = sys.argv[0]
+svgKuvaKansio = os.path.split(moduuliPolku)[0]
+
+#kohdeSVG = sys.argv[1]
 kohdeSVG = "SvgSuttu.svg"
 
-generate_gcode(os.path.join(moduuliPolku, "MuunnettavatSVGt", kohdeSVG))
+generate_gcode(os.path.join(svgKuvaKansio, "static", kohdeSVG))
 
 

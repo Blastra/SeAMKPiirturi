@@ -1,9 +1,17 @@
 <!doctype html>
   <title>Piirturin etäkäyttö</title>
   <h1>Piirrettävän kuvan esikatselu</h1>
-  <img src= {{ filename }} alt="Ongelma kuvan näyttämisessä">
+  <img src= {{ filepath }} alt="Ongelma kuvan näyttämisessä">
 <h2></h2>
+
 <form action="../../">
- <p><input type="submit" value="Vaihda kuva" /> 
+<p><input type="submit" value="Vaihda kuva" /> 
 </form>
-<button type="button"> Käynnistyspyyntö </button>
+
+<form action="/gengcode" >    
+<p><input type="submit" value="Käynnistyspyyntö" filename={{ filepath }}/>
+</form>
+
+
+
+

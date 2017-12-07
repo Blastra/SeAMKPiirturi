@@ -1,4 +1,4 @@
-
+#!/usr/bin/env python3.5
 
 #Visuaalisen käyttöliittymän tekeminen piirtolaitteelle -web-sovellus
 
@@ -10,6 +10,18 @@ from flask import Flask, request, redirect, url_for, render_template, send_from_
 import webbrowser
 from werkzeug.utils import secure_filename
 import os
+import subprocess
+#import pygame
+import sys
+
+
+
+#os.getcwd()
+#print(moduuliPolku)
+
+#Huom. moduulia svg2gcode on muokattu moduulipolkujen ja
+#tiedostopolkujen osalta soveltuvammaksi SeAMK:n ympäristöön
+#import svg2gcode
 
 #Debug-kategorioita voi kääntää päälle ja pois
 #tarpeen mukaan
@@ -53,9 +65,14 @@ tallennusKansio = os.path.join(APP_ROOT, "static")
 
 piirt.config["UPLOAD_FOLDER"] = tallennusKansio
 
+#Valmistellaan funktio moduulipolkujen
+#tarkistamista varten
+def moduuliTarkistus(moduuliPolku):
+    if moduuliPolku not in sys.path:
+        sys.path.append(moduuliPolku)
+        print("Moduulipolku "+str(moduuliPolku)+" lisätty")
 
 #Rajataan tallennus vain tietyille tiedostotyypeille
-
 sallitutTiedostoTyypit = set(["svg"])
 
 
@@ -86,9 +103,8 @@ def upload_file():
             file = request.files['file']
             # Käsitellään tapaus, jossa käyttäjä ei
             # anna tiedostoa
-            if file.filename == '':
-                flash('No selected file')
-                return redirect(request.url)
+            if file.filename == '':                
+                return 'Ei valittua tiedostoa'
             #Tarkistetaan, onko tiedosto sallittua tyyppiä
             if file and allowed_file(file.filename):                
                 filename = secure_filename(file.filename)
@@ -98,13 +114,47 @@ def upload_file():
                 #Tallennetaan tiedosto paikallisesti määriteltyyn polkuun
                 file.save(savPath)
                 
-                return redirect(url_for('uploaded_file',filename=filename))
+                return redirect(url_for('uploaded_file',filepath=savPath, filename=filename))
         return render_template("FileSubmitPage.html")
 
-@piirt.route('/static/upload/<filename>')
+@piirt.route('/static/upload/<filename>', methods=["GET","POST"])
 def uploaded_file(filename):
-    return render_template("UploadedImg.html", filename="/static/"+filename)
+    if request.method == "GET":
+        #Tallennetaan svg-tiedoston nimi myöhempää käyttöä varten
+        piirt.tiedNimi = filename
+        return render_template("UploadedImg.html", filepath="/static/"+filename)
 
+@piirt.route('/gengcode')
+def gengcode():    
+
+    #Tallennetaan muuttujaan polkurunko, joka johtaa ohjelman kansioon
+    polkuRunko = os.path.split(__file__)[0]
+    
+    #Määritetään polku, josta löytyy muuntoskripti svg:stä g-koodiksi
+    svgConvPath = os.path.join(os.path.join(polkuRunko, "SvgGCODEMuunnin","__init.py__"))
+
+    #Määritellään polku, josta svg-kuvat löytyvät
+    svgKuvaKansio = os.path.join(polkuRunko, "static")
+
+    #Haetaan applikaatio-objektiin tallennettu tiedostonimi
+    kohdeSVG = piirt.tiedNimi
+
+    #Varastoidaan moduulipolut 
+    moduuliPolut = []
+    moduuliPolut.append(os.path.join(os.path.split(__file__)[0],"SvgGCODEMuunnin"))
+    moduuliPolut.append(os.path.join(moduuliPolut[0],"lib"))
+
+    #Lisätään moduulipolut sys.path-muuttujaan tarvittaessa
+    for moduuliPolku in moduuliPolut:
+        moduuliTarkistus(moduuliPolku)
+
+    #Otetaan käyttöön svg:nmuuntomoduuli
+    from svg2gcode import generate_gcode, test
+
+    #Generoidaan G-koodi ja varastoidaan se tiedostoon
+    generate_gcode(os.path.join(svgKuvaKansio, kohdeSVG))
+
+    return "G-koodi generoitu palvelimella\n ja koneen valvojalle on lähetetty tulostuspyyntö"
 
 
 piirt.run()
