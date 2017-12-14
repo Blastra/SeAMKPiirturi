@@ -152,18 +152,15 @@ def generate_gcode(filename):
                 #print("qirSplit: "+str(qir.split("z")))
                 qirSplit = qir.split("z")[:-1]
                 #print("root.iter(): "+str(root.iter()))
+                for shap in qirSplit:            
+                ### Additions end here
+                    log += debug_log("\td is GOOD!")
 
-                log += debug_log("\td is GOOD!")
-
-                gcode += shape_preamble + "\n"
-                
-                
-                for shap in qirSplit:
-                    new_shape = True
+                    gcode += shape_preamble + "\n"
                     points = point_generator(shap, m, smoothness)
+
                     log += debug_log("\tPoints: "+str(points))
-                    ### Additions end here                    
-                
+
                     for x,y in points:
 
                         #log += debug_log("\t  pt: "+str((x,y)))
@@ -175,7 +172,6 @@ def generate_gcode(filename):
 
                         if x >= 0 and x <= bed_max_x and y >= 0 and y <= bed_max_y:
                             if new_shape:
-                                gcode+="M51\n"
                                 gcode += ("G0 X%0.1f Y%0.1f\n" % (x, y))
                                 gcode += "M52\n"
                                 new_shape = False
@@ -184,8 +180,8 @@ def generate_gcode(filename):
                             log += debug_log("\t    --Point printed")
                         else:
                             log += debug_log("\t    --POINT NOT PRINTED ("+str(bed_max_x)+","+str(bed_max_y)+")")
-                    #gcode += shape_postamble + "\n"
-                    #gcode+="M51\n"
+                    gcode += shape_postamble + "\n"
+                    #gcode+="M52\n"
                 else:
                   log += debug_log("\tNO PATH INSTRUCTIONS FOUND!!")
             else:

@@ -18,7 +18,7 @@ from svg2gcode import generate_gcode, test
 svgKuvaKansio = os.path.split(moduuliPolku)[0]
 
 #kohdeSVG = sys.argv[1]
-kohdeSVG = "SvgSuttu.svg"
+kohdeSVG = "Viisiviivaa.svg"
 
 generate_gcode(os.path.join(svgKuvaKansio, "static", kohdeSVG))
 
