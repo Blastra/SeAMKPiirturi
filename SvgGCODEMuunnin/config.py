@@ -6,16 +6,16 @@
 
 
 '''G-code emitted at the start of processing the SVG file'''
-preamble = "M51\nG1 Z0.0\nG28"
+preamble = "F100000\nG01 Z0.0\nG28"
 
 '''G-code emitted at the end of processing the SVG file'''
-postamble = "G28\nM50"
+postamble = "G28\nM50\nM30"
 
 '''G-code emitted before processing a SVG shape'''
-shape_preamble = "M51\nG4 P0.2"
+shape_preamble = "M51"
 
 '''G-code emitted after processing a SVG shape'''
-shape_postamble = "G4 P0.2\nM51"
+shape_postamble = "\nM51"
 
 # A4 area:               210mm x 297mm
 
