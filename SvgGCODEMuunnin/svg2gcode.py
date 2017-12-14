@@ -149,8 +149,10 @@ def generate_gcode(filename):
                 
                 qir = str(d)
 
-                #print("qirSplit: "+str(qir.split("z")))
+                
                 qirSplit = qir.split("z")[:-1]
+                print("qirSplit: "+str(qirSplit))
+                print("len(qirSplit): "+str(len(qirSplit)))
                 #print("root.iter(): "+str(root.iter()))
 
                 log += debug_log("\td is GOOD!")
@@ -168,19 +170,20 @@ def generate_gcode(filename):
 
                         #log += debug_log("\t  pt: "+str((x,y)))
 
-                        x = scale*x
-                        y = bed_max_y - scale*y
+                        x = bed_max_x/2.0 - scale*x
+                        y = bed_max_y/2.0 - scale*y
+                        #y = scale*y
 
                         log += debug_log("\t  pt: "+str((x,y)))
 
                         if x >= 0 and x <= bed_max_x and y >= 0 and y <= bed_max_y:
                             if new_shape:
                                 gcode+="M51\n"
-                                gcode += ("G00 X%0.1f Y%0.1f\n" % (x, y))
+                                gcode += ("G00 X%0.05f Y%0.05f\n" % (x, y))
                                 gcode += "M52\n"
                                 new_shape = False
                             else:
-                                gcode += ("G00 X%0.1f Y%0.1f\n" % (x, y))
+                                gcode += ("G00 X%0.05f Y%0.05f\n" % (x, y))
                             log += debug_log("\t    --Point printed")
                         else:
                             log += debug_log("\t    --POINT NOT PRINTED ("+str(bed_max_x)+","+str(bed_max_y)+")")
