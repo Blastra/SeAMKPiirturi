@@ -199,4 +199,4 @@ def point_generator(path, mat, flatness):
                     ctrl_pt1 = csp[0]
                     ctrl_pt2 = csp[1]
                     end_pt = csp[2]
-                    yield end_pt[0], end_pt[1],    
+                    yield end_pt[0], end_pt[1],

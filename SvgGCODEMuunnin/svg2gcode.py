@@ -42,7 +42,7 @@ def generate_gcode(filename):
     #outdir = os.path.join(dirlist,"gcode_output")
     if not os.path.exists(outdir):
         os.makedirs(outdir)
-    outfile = os.path.join(outdir, file.split(".svg")[0] + '.gcode')
+    outfile = os.path.join(outdir, file.split(".svg")[0] + '.nc')
     log += debug_log("Output File: "+outfile)
 
     # Make Debug File
@@ -88,7 +88,7 @@ def generate_gcode(filename):
     scale_y = bed_max_y / float(height.replace("mm",""))
     scale = min(scale_x, scale_y)
     if scale > 1:
-        scale = 1
+        scale = 0.6
 
 
     log += debug_log("wdth: "+str(width))
@@ -108,6 +108,8 @@ def generate_gcode(filename):
     for elem in root.iter():
         log += debug_log("--Found Elem: "+str(elem))
         new_shape = True
+        
+        
         try:
             tag_suffix = elem.tag.split("}")[-1]
         except:
@@ -134,68 +136,134 @@ def generate_gcode(filename):
             # 1. Reads the <tag>'s 'd' attribute.
             # 2. Reads the SVG and generates the path itself.
             d = shape_obj.d_path()
+            
             log += debug_log("\td: "+str(d))
 
             # The *Transformation Matrix* #
             # Specifies something about how curves are approximated
             # Non-essential - a default is used if the method below
             #   returns None.
+
             m = shape_obj.transformation_matrix()
+
+            print("m: "+str(m))
+            
             log += debug_log("\tm: "+str(m))
 
             if d:
-                ### Additions begin here
+                
                 #print("type(d): "+str(type(d)))
                 
                 qir = str(d)
 
+                highest_x = 0
+                lowest_x = 0
+
+                highest_y = 0
+                lowest_y = 0
                 
                 qirSplit = qir.split("z")[:-1]
-                print("qirSplit: "+str(qirSplit))
-                print("len(qirSplit): "+str(len(qirSplit)))
+                #print("qirSplit: "+str(qirSplit))
+                
                 #print("root.iter(): "+str(root.iter()))
 
                 log += debug_log("\td is GOOD!")
 
                 gcode += shape_preamble + "\n"
-                
-                
-                for shap in qirSplit:
-                    new_shape = True
-                    points = point_generator(shap, m, smoothness)
-                    log += debug_log("\tPoints: "+str(points))
-                    ### Additions end here                    
-                
-                    for x,y in points:
+
+                for prel in qirSplit:
+                    prel = prel+" z"
+                    chkPoints = point_generator(prel, m, smoothness)
+
+                    #Run a preliminary check of minimum and maximum
+                    #coordinates, then adjust accordingly to make
+                    #the lower left corner of the drawing
+                    #process be near the zero coordinates of
+                    #the drawing machine
+
+                    for x,y in chkPoints:
 
                         #log += debug_log("\t  pt: "+str((x,y)))
 
-                        x = bed_max_x/2.0 - scale*x
-                        y = bed_max_y/2.0 - scale*y
-                        #y = scale*y
+                        #x = bed_max_x/2.0 - scale*x
+                        #y = bed_max_y/2.0 - scale*y
 
-                        log += debug_log("\t  pt: "+str((x,y)))
+                        x = scale*x
+                        y = scale*y
+                        
+                        #y = bed_max_y - scale*y
+                        if x > highest_x:
+                            highest_x = x
+                        if x < lowest_x:
+                            lowest_x = x
+                        if y > highest_y:
+                            highest_y = y
+                        if y < lowest_y:
+                            lowest_y = y
 
-                        if x >= 0 and x <= bed_max_x and y >= 0 and y <= bed_max_y:
-                            if new_shape:
-                                gcode+="M51\n"
-                                gcode += ("G00 X%0.05f Y%0.05f\n" % (x, y))
-                                gcode += "M52\n"
-                                new_shape = False
-                            else:
-                                gcode += ("G00 X%0.05f Y%0.05f\n" % (x, y))
-                            log += debug_log("\t    --Point printed")
+                    xAdj = 0
+                    yAdj = 0
+
+                    if lowest_x < 0:
+                        xAdj = -lowest_x + 50
+                    if lowest_y < 0:
+                        yAdj = -lowest_y + 30
+
+                print("qirSplit: "+str(qirSplit))
+                
+                #for shap in qirSplit:
+
+                #    shap +="z "
+
+                
+                #print("shap: "+str(shap))
+                
+                #new_shape = True
+                
+                points = point_generator(d, m, smoothness)
+
+                print(type(points))
+                
+                log += debug_log("\tPoints: "+str(points))
+
+                #Generate the G-code                    
+                    
+                for x,y in points:
+                    
+                    #log += debug_log("\t  pt: "+str((x,y)))
+
+                    x = scale*x + xAdj
+                    y = scale*y + yAdj
+
+                    log += debug_log("\t  pt: "+str((x,y)))
+
+                    #Check that the drawing board limits are not exceeded
+                    if x >= 0 and x <= bed_max_x and y >= 0 and y <= bed_max_y:
+                        if new_shape:
+                            print("NEW SHAPE ACTIVATEEEEEEEEEEEED")
+                            gcode+="M51\n"
+                            gcode += ("G00 X%0.1f Y%0.1f\n" % (x, y))
+                            gcode += "M52\n"
+                            new_shape = False
                         else:
-                            log += debug_log("\t    --POINT NOT PRINTED ("+str(bed_max_x)+","+str(bed_max_y)+")")
-                    #gcode += shape_postamble + "\n"
-                    #gcode+="M51\n"
-                else:
-                  log += debug_log("\tNO PATH INSTRUCTIONS FOUND!!")
+                            gcode += ("G00 X%0.1f Y%0.1f\n" % (x, y))
+                        log += debug_log("\t    --Point printed")
+                    else:
+                        log += debug_log("\t    --POINT NOT PRINTED ("+str(bed_max_x)+","+str(bed_max_y)+")")
+                gcode += shape_postamble + "\n"
+        
+            #gcode+="M51\n"
             else:
-              log += debug_log("  --No Name: "+tag_suffix)
+                log += debug_log("\tNO PATH INSTRUCTIONS FOUND!!")
+        
+    else:
+        log += debug_log("  --No Name: "+tag_suffix)
             
-            
+        
     gcode += postamble + "\n"
+
+    print("highest_x: "+str(highest_x), "lowest_x: "+str(lowest_y),
+          "highest_y: "+str(highest_y), "lowest_y: "+str(lowest_y))
 
     # Write the Result
     ofile = open(outfile, 'w+')
