@@ -11,6 +11,8 @@ import shapes as shapes_pkg
 from shapes import point_generator
 from config import *
 
+import itertools as itr
+
 DEBUGGING = True
 SVG = set(['rect', 'circle', 'ellipse', 'line', 'polyline', 'polygon', 'path'])
 
@@ -30,6 +32,7 @@ def generate_gcode(filename):
     # ASSUMING LINUX / OSX FOLDER NAMING STYLE
     log = ""
     log += debug_log("Input File: "+filename)
+    log += debug_log("Debug resides in: "+str(debug_log.__module__))
 
     #Define the file/folder paths to work with
     file = os.path.split(filename)[-1]
@@ -104,10 +107,14 @@ def generate_gcode(filename):
     gcode += preamble + "\n"
     
     # Iterate through svg elements
+
+    commandStock = []
     
     for elem in root.iter():
+
+        #gcode += "NIRNAR\n"
         log += debug_log("--Found Elem: "+str(elem))
-        new_shape = True
+        #new_shape = True
         
         
         try:
@@ -145,9 +152,7 @@ def generate_gcode(filename):
             #   returns None.
 
             m = shape_obj.transformation_matrix()
-
-            print("m: "+str(m))
-            
+                        
             log += debug_log("\tm: "+str(m))
 
             if d:
@@ -161,74 +166,79 @@ def generate_gcode(filename):
 
                 highest_y = 0
                 lowest_y = 0
-                
-                qirSplit = qir.split("z")[:-1]
-                #print("qirSplit: "+str(qirSplit))
+
+                #Split the chain of commands
+                #where z appears, leaving the last
+                #empty list out
+                qirSplit = qir.split("z")[:-1]                
                 
                 #print("root.iter(): "+str(root.iter()))
 
                 log += debug_log("\td is GOOD!")
 
-                gcode += shape_preamble + "\n"
+                #gcode += shape_preamble + "\n"
 
-                for prel in qirSplit:
-                    prel = prel+" z"
-                    chkPoints = point_generator(prel, m, smoothness)
-
-                    #Run a preliminary check of minimum and maximum
-                    #coordinates, then adjust accordingly to make
-                    #the lower left corner of the drawing
-                    #process be near the zero coordinates of
-                    #the drawing machine
-
-                    for x,y in chkPoints:
-
-                        #log += debug_log("\t  pt: "+str((x,y)))
-
-                        #x = bed_max_x/2.0 - scale*x
-                        #y = bed_max_y/2.0 - scale*y
-
-                        x = scale*x
-                        y = scale*y
-                        
-                        #y = bed_max_y - scale*y
-                        if x > highest_x:
-                            highest_x = x
-                        if x < lowest_x:
-                            lowest_x = x
-                        if y > highest_y:
-                            highest_y = y
-                        if y < lowest_y:
-                            lowest_y = y
-
-                    xAdj = 0
-                    yAdj = 0
-
-                    if lowest_x < 0:
-                        xAdj = -lowest_x + 50
-                    if lowest_y < 0:
-                        yAdj = -lowest_y + 30
-
-                print("qirSplit: "+str(qirSplit))
+                chkPoints = point_generator(d, m, smoothness)
                 
-                #for shap in qirSplit:
+                #Run a preliminary check of minimum and maximum
+                #coordinates, then adjust accordingly to make
+                #the lower left corner of the drawing
+                #process be near the zero coordinates of
+                #the drawing machine
 
-                #    shap +="z "
+                for x,y,cmdType in chkPoints:
 
-                
-                #print("shap: "+str(shap))
-                
-                #new_shape = True
-                
-                points = point_generator(d, m, smoothness)
+                    #log += debug_log("\t  pt: "+str((x,y)))
 
-                print(type(points))
+                    #x = bed_max_x/2.0 - scale*x
+                    #y = bed_max_y/2.0 - scale*y
+
+                    x = scale*x
+                    y = scale*y
+                    
+                    #y = bed_max_y - scale*y
+                    if x > highest_x:
+                        highest_x = x
+                    if x < lowest_x:
+                        lowest_x = x
+                    if y > highest_y:
+                        highest_y = y
+                    if y < lowest_y:
+                        lowest_y = y
+
+                    #Store all bezier curve commands
+                    #for counting and ending the
+                    #drawing correctly
+                    commandStock.append(cmdType)
+
+                #Count the number of Z-commands
+                zCounter = commandStock.count("Z")
+                
+                xAdj = 0
+                yAdj = 0
+
+                if lowest_x < 0:
+                    xAdj = -lowest_x + 50
+                if lowest_y < 0:
+                    yAdj = -lowest_y + 30
+            
+                
+
+                            
+                points = point_generator(d, m, smoothness)              
+
+                resPts = point_generator(d, m, smoothness)              
                 
                 log += debug_log("\tPoints: "+str(points))
 
-                #Generate the G-code                    
+                #Generate the G-code
+
+                new_shape = True
+
+                #Count the finished shapes
+                finishCounter = 0
                     
-                for x,y in points:
+                for x,y,cmdType in points:
                     
                     #log += debug_log("\t  pt: "+str((x,y)))
 
@@ -239,32 +249,43 @@ def generate_gcode(filename):
 
                     #Check that the drawing board limits are not exceeded
                     if x >= 0 and x <= bed_max_x and y >= 0 and y <= bed_max_y:
+
+                        #If the number of commands matches the amount of commands
+                        #given per shape, if the end is reached, lift the tool                        
+                        
+                        #if cmdNo == liftList[cmdLenInd]:
+                        #gcode += "M51\n"
                         if new_shape:
-                            print("NEW SHAPE ACTIVATEEEEEEEEEEEED")
-                            gcode+="M51\n"
+                            gcode += "M51\n"
                             gcode += ("G00 X%0.1f Y%0.1f\n" % (x, y))
                             gcode += "M52\n"
                             new_shape = False
-                        else:
-                            gcode += ("G00 X%0.1f Y%0.1f\n" % (x, y))
+
+                        if cmdType == 'Z' and finishCounter < zCounter-1:
+                            new_shape = True
+                            finishCounter += 1
+                        
+                        gcode += ("G00 X%0.1f Y%0.1f\n" % (x, y))
+                        
                         log += debug_log("\t    --Point printed")
+                        
                     else:
                         log += debug_log("\t    --POINT NOT PRINTED ("+str(bed_max_x)+","+str(bed_max_y)+")")
+                    
                 gcode += shape_postamble + "\n"
-        
-            #gcode+="M51\n"
+                
             else:
                 log += debug_log("\tNO PATH INSTRUCTIONS FOUND!!")
         
     else:
         log += debug_log("  --No Name: "+tag_suffix)
             
-        
+    #nuuh()    
     gcode += postamble + "\n"
 
     print("highest_x: "+str(highest_x), "lowest_x: "+str(lowest_y),
           "highest_y: "+str(highest_y), "lowest_y: "+str(lowest_y))
-
+    
     # Write the Result
     ofile = open(outfile, 'w+')
     ofile.write(gcode)

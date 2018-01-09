@@ -68,7 +68,7 @@ pathdefs = {
     'S':['S', 4, [float, float, float, float], ['x','y','x','y']], 
     'Q':['Q', 4, [float, float, float, float], ['x','y','x','y']], 
     'T':['T', 2, [float, float], ['x','y']], 
-    'A':['A', 7, [float, float, float, int, int, float, float], [0,0,0,0,0,'x','y']], 
+    'A':['A', 7, [float, float, float, int, int, float, float], [0,0,0,0,0,'x','y']],     
     'Z':['L', 0, [], []]
     }
 def parsePath(d):
@@ -86,6 +86,7 @@ def parsePath(d):
     lastCommand = ''
     
     while 1:
+
         try:
             token, isCommand = next(lexer)
         except StopIteration:
@@ -150,7 +151,13 @@ def parsePath(d):
             subPathStart = tuple(params[0:2])
             pen = subPathStart
         if outputCommand == 'Z':
+            #Addition, possibly volatile
+            #subPathStart = tuple(params[0:2])
+            #pen = tuple(params[-2:])
+            #Additions end
+            
             pen = subPathStart
+            
         else:
             pen = tuple(params[-2:])
 
@@ -160,7 +167,10 @@ def parsePath(d):
             lastControl = pen
         lastCommand = command
 
-        retval.append([outputCommand,params])
+        retval.append([outputCommand,params])    
+
+    #nuuh2()
+    
     return retval
 
 def formatPath(a):

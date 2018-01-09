@@ -21,6 +21,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 import simplepath 
 from math import *
+import svg2gcode
+
+#svg2gcode.debug_log = debug_log
 
 def matprod(mlist):
     prod=mlist[0]
@@ -103,22 +106,31 @@ def CubicSuperPath(simplepath):
     subpathstart = []
     last = []
     lastctrl = []
+    log = ""
     for s in simplepath:
         cmd, params = s        
         if cmd == 'M':
+            #Active in the old version
             if last:
-                csp[subpath].append([lastctrl[:],last[:],last[:]])
+                #Old version:
+                #csp[subpath].append([lastctrl[:],last[:],last[:]])
+                csp[subpath].append([lastctrl[:],last[:],last[:],cmd])
             subpath += 1
+            #csp.append([])
             csp.append([])
             subpathstart =  params[:]
             last = params[:]
             lastctrl = params[:]
         elif cmd == 'L':
-            csp[subpath].append([lastctrl[:],last[:],last[:]])
+            #Old version:
+            #csp[subpath].append([lastctrl[:],last[:],last[:]])
+            csp[subpath].append([lastctrl[:],last[:],last[:],cmd])
             last = params[:]
             lastctrl = params[:]
         elif cmd == 'C':
-            csp[subpath].append([lastctrl[:],last[:],params[:2]])
+            #Old version:
+            #csp[subpath].append([lastctrl[:],last[:],params[:2]])
+            csp[subpath].append([lastctrl[:],last[:],params[:2],cmd])
             last = params[-2:]
             lastctrl = params[2:4]
         elif cmd == 'Q':
@@ -133,21 +145,34 @@ def CubicSuperPath(simplepath):
             y1=1./3*q0[1]+2./3*q1[1]
             y2=           2./3*q1[1]+1./3*q2[1]
             y3=                           q2[1]
-            csp[subpath].append([lastctrl[:],[x0,y0],[x1,y1]])
+            #Old version:
+            #csp[subpath].append([lastctrl[:],[x0,y0],[x1,y1]])
+            csp[subpath].append([lastctrl[:],[x0,y0],[x1,y1],cmd])
             last = [x3,y3]
             lastctrl = [x2,y2]
         elif cmd == 'A':
-            arcp=ArcToPath(last[:],params[:])
+            #Old version:
+            #arcp=ArcToPath(last[:],params[:])
+            arcp=ArcToPath(last[:],params[:],cmd)
             arcp[ 0][0]=lastctrl[:]
             last=arcp[-1][1]
-            lastctrl = arcp[-1][0]
+            lastctrl = arcp[-1][0]            
             csp[subpath]+=arcp[:-1]
+            
         elif cmd == 'Z':
-            csp[subpath].append([lastctrl[:],last[:],last[:]])
+
+            #Old version:
+            #csp[subpath].append([lastctrl[:],last[:],last[:]])
+
+            csp[subpath].append([lastctrl[:],last[:],last[:],cmd])
             last = subpathstart[:]
             lastctrl = subpathstart[:]
+            #nuuh2()
+            
     #append final superpoint
-    csp[subpath].append([lastctrl[:],last[:],last[:]])
+    csp[subpath].append([lastctrl[:],last[:],last[:],"R"])
+
+    #nuuh3()
     return csp    
 
 def unCubicSuperPath(csp):

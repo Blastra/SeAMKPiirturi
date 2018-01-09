@@ -72,6 +72,7 @@ class rect(svgshape):
         a.append( [' l ', [0, self.height]] )
         a.append( [' l ', [-self.width, 0]] )
         a.append( [' Z', []] )
+        #a.append( [' Z', ["M51",0]] )
         return simplepath.formatPath(a)     
 
 # ELLIPSE tag
@@ -178,7 +179,7 @@ class polyline(polycommon):
             d += " L " + self.points[i]
         return d
 
-#
+
 def point_generator(path, mat, flatness):
 
         if len(simplepath.parsePath(path)) == 0:
@@ -186,17 +187,26 @@ def point_generator(path, mat, flatness):
        
         simple_path = simplepath.parsePath(path)
         startX,startY = float(simple_path[0][1][0]), float(simple_path[0][1][1])
-        yield startX, startY
+        command = simple_path[0][0][0]
+        
+        yield startX, startY, command
 
         p = cubicsuperpath.parsePath(path)
-        
+                
         if mat:
             simpletransform.applyTransformToPath(mat, p)
 
+        commandPile = []
+
         for sp in p:
                 cspsubdiv.subdiv( sp, flatness)
+                #nuuh3()
+                #command = sp[-1]
                 for csp in sp:
                     ctrl_pt1 = csp[0]
                     ctrl_pt2 = csp[1]
                     end_pt = csp[2]
-                    yield end_pt[0], end_pt[1],
+                    command = csp[-1]
+                    commandPile.append(command)
+                    
+                    yield end_pt[0], end_pt[1], command
