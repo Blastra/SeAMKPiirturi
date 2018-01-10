@@ -221,13 +221,8 @@ def generate_gcode(filename):
                     xAdj = -lowest_x + 50
                 if lowest_y < 0:
                     yAdj = -lowest_y + 30
-            
-                
-
                             
                 points = point_generator(d, m, smoothness)              
-
-                resPts = point_generator(d, m, smoothness)              
                 
                 log += debug_log("\tPoints: "+str(points))
 
@@ -235,8 +230,12 @@ def generate_gcode(filename):
 
                 new_shape = True
 
+                #move_between_shapes = False
+
                 #Count the finished shapes
                 finishCounter = 0
+                skipCounter = 0
+                commandCount = 0
                     
                 for x,y,cmdType in points:
                     
@@ -250,27 +249,32 @@ def generate_gcode(filename):
                     #Check that the drawing board limits are not exceeded
                     if x >= 0 and x <= bed_max_x and y >= 0 and y <= bed_max_y:
 
-                        #If the number of commands matches the amount of commands
-                        #given per shape, if the end is reached, lift the tool                        
-                        
-                        #if cmdNo == liftList[cmdLenInd]:
-                        #gcode += "M51\n"
-                        if new_shape:
-                            gcode += "M51\n"
-                            gcode += ("G00 X%0.1f Y%0.1f\n" % (x, y))
-                            gcode += "M52\n"
-                            new_shape = False
-
+                        #If the Z command is reached, increment the counter
                         if cmdType == 'Z' and finishCounter < zCounter-1:
                             new_shape = True
+                            skipCounter = 3
                             finishCounter += 1
-                        
-                        gcode += ("G00 X%0.1f Y%0.1f\n" % (x, y))
+
+                        #If the number of commands matches the amount of commands
+                        #given per shape, if the end is reached, lift the tool                        
+
+                        if new_shape:                                                        
+                            skipCounter -= 1
+                            if skipCounter == 0:
+                                gcode += "M51\n"
+                                gcode += ("G00 X%0.1f Y%0.1f\n" % (x, y))
+                                gcode += "M52\n"
+                                new_shape = False
+                            
+                        else:
+                            gcode += ("G00 X%0.1f Y%0.1f\n" % (x, y))
+
+                        commandCount += 1
                         
                         log += debug_log("\t    --Point printed")
                         
                     else:
-                        log += debug_log("\t    --POINT NOT PRINTED ("+str(bed_max_x)+","+str(bed_max_y)+")")
+                        log += debug_log("\t    --POINT NOT PRINTED ("+str(bed_max_x)+","+str(bed_max_y)+")")                        
                     
                 gcode += shape_postamble + "\n"
                 
@@ -279,8 +283,7 @@ def generate_gcode(filename):
         
     else:
         log += debug_log("  --No Name: "+tag_suffix)
-            
-    #nuuh()    
+        
     gcode += postamble + "\n"
 
     print("highest_x: "+str(highest_x), "lowest_x: "+str(lowest_y),
