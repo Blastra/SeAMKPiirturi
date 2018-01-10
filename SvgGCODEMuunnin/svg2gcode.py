@@ -250,7 +250,10 @@ def generate_gcode(filename):
                     if x >= 0 and x <= bed_max_x and y >= 0 and y <= bed_max_y:
 
                         #If the Z command is reached, increment the counter
+                        #and close the shape with the point from which it was
+                        #started
                         if cmdType == 'Z' and finishCounter < zCounter-1:
+                            gcode += startPointStorage
                             new_shape = True
                             skipCounter = 3
                             finishCounter += 1
@@ -258,11 +261,12 @@ def generate_gcode(filename):
                         #If the number of commands matches the amount of commands
                         #given per shape, if the end is reached, lift the tool                        
 
-                        if new_shape:                                                        
+                        if new_shape:
                             skipCounter -= 1
                             if skipCounter <= 0:
                                 gcode += "M51\n"
-                                gcode += ("G00 X%0.1f Y%0.1f\n" % (x, y))
+                                startPointStorage = ("G00 X%0.1f Y%0.1f\n" % (x, y))
+                                gcode += startPointStorage
                                 gcode += "M52\n"
                                 new_shape = False
                             
@@ -288,6 +292,8 @@ def generate_gcode(filename):
 
     print("highest_x: "+str(highest_x), "lowest_x: "+str(lowest_y),
           "highest_y: "+str(highest_y), "lowest_y: "+str(lowest_y))
+
+    
     
     # Write the Result
     ofile = open(outfile, 'w+')

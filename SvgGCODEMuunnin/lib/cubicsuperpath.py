@@ -166,13 +166,12 @@ def CubicSuperPath(simplepath):
 
             csp[subpath].append([lastctrl[:],last[:],last[:],cmd])
             last = subpathstart[:]
-            lastctrl = subpathstart[:]
-            #nuuh2()
+            lastctrl = subpathstart[:]        
             
     #append final superpoint
     csp[subpath].append([lastctrl[:],last[:],last[:],"R"])
 
-    #nuuh3()
+    
     return csp    
 
 def unCubicSuperPath(csp):

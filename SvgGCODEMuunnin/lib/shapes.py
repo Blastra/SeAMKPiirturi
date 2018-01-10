@@ -201,8 +201,6 @@ def point_generator(path, mat, flatness):
 
         for sp in p:
                 cspsubdiv.subdiv( sp, flatness)
-                
-                #command = sp[-1]
                 for csp in sp:
                     ctrl_pt1 = csp[0]
                     ctrl_pt2 = csp[1]
