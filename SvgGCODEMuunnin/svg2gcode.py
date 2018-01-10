@@ -252,7 +252,7 @@ def generate_gcode(filename):
                         #If the Z command is reached, increment the counter
                         #and close the shape with the point from which it was
                         #started
-                        if cmdType == 'Z' and finishCounter < zCounter-1:
+                        if cmdType == 'Z' and finishCounter < zCounter:
                             gcode += startPointStorage
                             new_shape = True
                             skipCounter = 3
@@ -284,10 +284,11 @@ def generate_gcode(filename):
                 
             else:
                 log += debug_log("\tNO PATH INSTRUCTIONS FOUND!!")
-        
+                
     else:
         log += debug_log("  --No Name: "+tag_suffix)
-        
+
+    
     gcode += postamble + "\n"
 
     print("highest_x: "+str(highest_x), "lowest_x: "+str(lowest_y),
