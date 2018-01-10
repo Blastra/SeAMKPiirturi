@@ -22,7 +22,8 @@ def subdiv(sp,flat,i=1):
     p1 = sp[i-1][2]  
     p2 = sp[i][0]  
     p3 = sp[i][1]
-    cmd = sp[i-1][3]
+    if len(sp[i-1]) > 3:
+        cmd = sp[i-1][3]
       
     b = (p0,p1,p2,p3)  
     m = maxdist(b)  
@@ -34,7 +35,10 @@ def subdiv(sp,flat,i=1):
     else:  
         one, two = beziersplitatt(b,0.5)  
         sp[i-1][2] = one[1]  
-        sp[i][0] = two[2]  
-        p = [one[2],one[3],two[1],cmd]  
+        sp[i][0] = two[2]
+        if len(sp[i-1]) > 3:
+            p = [one[2],one[3],two[1],cmd]
+        else:
+            p = [one[2],one[3],two[1]]
         sp[i:1] = [p]      
         subdiv(sp,flat,i)  

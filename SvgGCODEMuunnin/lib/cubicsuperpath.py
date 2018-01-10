@@ -44,7 +44,7 @@ def applymat(mat, pt):
 def norm(pt):
     return sqrt(pt[0]*pt[0]+pt[1]*pt[1])
 
-def ArcToPath(p1,params):
+def ArcToPath(p1,params,cmd):
     A=p1[:]
     rx,ry,teta,longflag,sweepflag,x2,y2=params[:]
     teta = teta*pi/180.0
