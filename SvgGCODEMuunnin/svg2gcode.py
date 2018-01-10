@@ -291,6 +291,8 @@ def generate_gcode(filename):
     
     gcode += postamble + "\n"
 
+    nuuh()
+
     #print("highest_x: "+str(highest_x), "lowest_x: "+str(lowest_y),
     #      "highest_y: "+str(highest_y), "lowest_y: "+str(lowest_y))
     

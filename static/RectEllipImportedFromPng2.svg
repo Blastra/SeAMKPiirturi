@@ -14,7 +14,7 @@
    height="62.935555mm"
    width="74.224442mm"
    inkscape:version="0.91 r13725"
-   sodipodi:docname="RectEllipImportedFromPng.svg">
+   sodipodi:docname="RectEllipImportedFromPng2.svg">
   <sodipodi:namedview
      pagecolor="#ffffff"
      bordercolor="#666666"
@@ -45,7 +45,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>

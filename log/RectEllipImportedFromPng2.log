@@ -1,0 +1,21 @@
+Input File: /home/arad/Git/SeAMKPiirturi/static/RectEllipImportedFromPng2.svg
+Debug resides in: svg2gcode
+Output File: /home/arad/Git/SeAMKPiirturi/TuotetutNCTiedostot/RectEllipImportedFromPng2.nc
+Log File: /home/arad/Git/SeAMKPiirturi/static/../log/RectEllipImportedFromPng2.log
+
+wdth: 74.224442mm
+hght: 62.935555mm
+scale: 0.6
+x%: 15.224095588350803
+y%: 7.94463479348041
+--Found Elem: <Element '{http://www.w3.org/2000/svg}svg' at 0x7fbd0c5c9598>
+--Found Elem: <Element '{http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd}namedview' at 0x7fbd0c5c96d8>
+--Found Elem: <Element '{http://www.w3.org/2000/svg}defs' at 0x7fbd0c5c9868>
+--Found Elem: <Element '{http://www.w3.org/2000/svg}metadata' at 0x7fbd0c5c98b8>
+--Found Elem: <Element '{http://www.w3.org/1999/02/22-rdf-syntax-ns#}RDF' at 0x7fbd0c5c9958>
+--Found Elem: <Element '{http://creativecommons.org/ns#}Work' at 0x7fbd0c5c99a8>
+--Found Elem: <Element '{http://purl.org/dc/elements/1.1/}format' at 0x7fbd0c5c99f8>
+--Found Elem: <Element '{http://purl.org/dc/elements/1.1/}type' at 0x7fbd0c5c9a48>
+--Found Elem: <Element '{http://purl.org/dc/elements/1.1/}title' at 0x7fbd0c5c9a98>
+--Found Elem: <Element '{http://www.w3.org/2000/svg}image' at 0x7fbd0c5c9ae8>
+  --No Name: image
