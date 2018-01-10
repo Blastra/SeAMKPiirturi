@@ -212,4 +212,4 @@ def point_generator(path, mat, flatness):
                     
                     yield end_pt[0], end_pt[1], command
                     rirCount += 1
-        nuuh()
+        #nuuh()

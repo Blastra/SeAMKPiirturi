@@ -260,7 +260,7 @@ def generate_gcode(filename):
 
                         if new_shape:                                                        
                             skipCounter -= 1
-                            if skipCounter == 0:
+                            if skipCounter <= 0:
                                 gcode += "M51\n"
                                 gcode += ("G00 X%0.1f Y%0.1f\n" % (x, y))
                                 gcode += "M52\n"
