@@ -6,7 +6,7 @@
 
 
 '''G-code emitted at the start of processing the SVG file'''
-preamble = "F100000\nG90\nM50"
+preamble = "F50000\nG90\nM50"
 
 '''G-code emitted at the end of processing the SVG file'''
 postamble = "M50\nM30"
